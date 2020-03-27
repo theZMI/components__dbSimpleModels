@@ -3,7 +3,7 @@
   "description": "Very simple php model on DbSimple",
   "version": "1.0.0",
   "license": "MIT",
-  "homepage": "https://github.com/theZMI/components__simpleModels",
+  "homepage": "https://github.com/theZMI/components__dbSimpleModels",
   "authors": [
     {
       "name": "theZMI",
