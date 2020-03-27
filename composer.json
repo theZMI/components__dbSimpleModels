@@ -1,0 +1,17 @@
+{
+    "name": "thezmi/dbsimple-models",
+    "description": "Very simple php model on DbSimple",
+    "homepage": "https://github.com/theZMI/components__simpleModels",
+    "authors": [
+        {
+            "name": "theZMI",
+            "homepage": "https://github.com/theZMI",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Models\\": "src/"
+        }
+    }
+}

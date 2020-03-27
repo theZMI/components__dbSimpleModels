@@ -1,2 +1,2 @@
-# components__simpleModels
-Very simple php model on DbSimple
+# components__dbSimpleModels
+Very simple php models on DbSimple
