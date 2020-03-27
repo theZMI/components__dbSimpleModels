@@ -1,17 +1,22 @@
 {
-    "name": "thezmi/dbsimple-models",
-    "description": "Very simple php model on DbSimple",
-    "homepage": "https://github.com/theZMI/components__simpleModels",
-    "authors": [
-        {
-            "name": "theZMI",
-            "homepage": "https://github.com/theZMI",
-            "role": "Developer"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "Models\\": "src/"
-        }
+  "name": "thezmi/dbsimple-models",
+  "description": "Very simple php model on DbSimple",
+  "license": "MIT",
+  "homepage": "https://github.com/theZMI/components__simpleModels",
+  "authors": [
+    {
+      "name": "theZMI",
+      "homepage": "https://github.com/theZMI",
+      "email": "zmigpost@gmail.com",
+      "role": "Developer"
     }
+  ],
+  "require": {
+    "php" : ">=7.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Models\\": "src/"
+    }
+  }
 }
