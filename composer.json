@@ -1,6 +1,7 @@
 {
   "name": "thezmi/dbsimple-models",
   "description": "Very simple php model on DbSimple",
+  "version": "1.0",
   "license": "MIT",
   "homepage": "https://github.com/theZMI/components__simpleModels",
   "authors": [
