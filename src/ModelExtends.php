@@ -27,6 +27,6 @@ class ModelExtends extends ModelOptimized {
     }
 
     public function __debugInfo() {
-        return $this->data;
+        return $this->GetData();
     }
 }
