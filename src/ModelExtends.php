@@ -3,7 +3,7 @@
 namespace Models;
 
 class ModelExtends extends ModelOptimized {
-    const PAGE_ALL = -1;
+    const PAGE_ALL   = -1;
     const PAGE_LIMIT = 100;
 
     protected function CreateTable() {
