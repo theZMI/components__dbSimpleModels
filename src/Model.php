@@ -8,45 +8,48 @@ namespace Models;
  * @author  Zmi
  * @updated GYL
  */
-abstract class Model {
+abstract class Model implements IModel
+{
     protected $table;
     protected $db;
-    private $idField;
-    private $id;
-    private $data = [];
-    private $dataStart = [];
-    private $readOnly = false;
-    private $isDel = false;
+    private   $idField;
+    private   $id;
+    private   $data      = [];
+    private   $dataStart = [];
+    private   $readOnly  = false;
+    private   $isDel     = false;
 
-    abstract protected function CreateTable();
+    abstract protected function createTable();
 
-    public function __construct($db, $table, $idField, $id = null, $readOnly = false) {
+    public function __construct($db, $table, $idField, $id = null, $readOnly = false)
+    {
         $this->db       = $db;
         $this->table    = $table;
         $this->idField  = $idField;
         $this->id       = $id;
         $this->readOnly = $readOnly;
 
-        if ( ! $readOnly) {
-            $this->CreateTable();
+        if (!$readOnly) {
+            $this->createTable();
         }
 
         if ($this->id) {
-            $this->data      = $this->db->selectRow("SELECT
-                                                    *
-                                                FROM
-                                                    ?#
-                                                WHERE
-                                                    ?# = ?d",
+            $this->data = $this->dataStart = $this->db->selectRow(
+                "SELECT
+                    *
+                FROM
+                    ?#
+                WHERE
+                    ?# = ?d",
                 $this->table,
                 $this->idField,
                 $this->id
             );
-            $this->dataStart = $this->data;
         }
     }
 
-    public function __set($key, $value) {
+    public function __set($key, $value)
+    {
         if ($this->isDel) {
             trigger_error("Can not change removed object!", E_USER_ERROR);
         }
@@ -62,35 +65,38 @@ abstract class Model {
         return $this->data[$key] = $value;
     }
 
-    public function __get($key) {
+    public function __get($key)
+    {
         // Нельзя получать данные из объекта который удалён
         if ($this->isDel) {
             trigger_error("Can not get value from removed object!", E_USER_ERROR);
         }
 
         // Если спрашивают ключевое поле, но сейчас идёт только заполнение данных то пытаетмся сделать запись в БД и вернуть id который она скажет
-        if (in_array($key, [$this->idField, 'id']) && ! $this->id && count($this->data)) {
-            return $this->Flush();
+        if (in_array($key, [$this->idField, 'id']) && !$this->id && count($this->data)) {
+            return $this->flush();
         }
 
         return $this->data[$key];
     }
 
-    public function __isset($key) {
+    public function __isset($key)
+    {
         // Нельзя получать данные из объекта который удалён
         if ($this->isDel) {
             trigger_error("Can not get value from removed object!", E_USER_ERROR);
         }
 
         // Если спрашивают ключевое поле, но сейчас идёт только заполнение данных то пытаетмся сделать запись в БД и вернуть id который она скажет
-        if (in_array($key, [$this->idField, 'id']) && ! $this->id && count($this->data)) {
-            return $this->Flush();
+        if (in_array($key, [$this->idField, 'id']) && !$this->id && count($this->data)) {
+            return $this->flush();
         }
 
         return isset($this->data[$key]);
     }
 
-    public function Flush() {
+    public function flush()
+    {
         $ret = false;
 
         if ($this->readOnly) {
@@ -106,7 +112,9 @@ abstract class Model {
                 if ($this->dataStart != $this->data) {
                     $data = [];
                     foreach ($this->data as $k => $v) {
-                        if ($k == $this->idField) continue;
+                        if ($k == $this->idField) {
+                            continue;
+                        }
                         $data[$k] = $v;
                     }
 
@@ -143,23 +151,28 @@ abstract class Model {
         return $ret;
     }
 
-    public function IsExists() {
+    public function isExists()
+    {
         return $this->db->selectCell("SELECT COUNT(*) FROM ?# WHERE ?# = ?d", $this->table, $this->idField, $this->id) > 0;
     }
 
-    public function HasChanges() {
+    public function hasChanges()
+    {
         return $this->data != $this->dataStart;
     }
 
-    public function IsOnlyShow() {
+    public function isOnlyShow()
+    {
         return $this->readOnly;
     }
 
-    public function IsDeleted() {
+    public function isDeleted()
+    {
         return $this->isDel;
     }
 
-    public function Delete() {
+    public function delete()
+    {
         $ret = false;
         if ($this->readOnly || $this->isDel) {
             return $ret;
@@ -176,11 +189,13 @@ abstract class Model {
         return $ret;
     }
 
-    public function __destruct() {
-        return $this->Flush();
+    public function __destruct()
+    {
+        return $this->flush();
     }
 
-    public function GetData() {
+    public function getData()
+    {
         return $this->data;
     }
 }

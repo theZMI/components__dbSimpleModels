@@ -8,36 +8,37 @@ namespace Models;
  * @author  Zmi
  * @updated GYL
  */
-abstract class ModelOptimized {
+abstract class ModelOptimized implements IModel
+{
     protected $table;
     protected $db;
-    private $idField;
-    private $id;
-    private $data = [];
-    private $dataStart = [];
-    private $readOnly = false;
+    private   $idField;
+    private   $id;
+    private   $data      = [];
+    private   $dataStart = [];
+    private   $readOnly  = false;
+    private   $isDel     = false;
 
-    private $isDel = false;
+    abstract protected function createTable();
 
-    abstract protected function CreateTable();
-
-    private static $_queries = [];
+    private static $_queries           = [];
     private static $_listCreatedTables = [];
 
-    public function __construct($db, $table, $idField, $id = null, $readOnly = false) {
+    public function __construct($db, $table, $idField, $id = null, $readOnly = false)
+    {
         $this->db       = $db;
         $this->table    = $table;
         $this->idField  = $idField;
         $this->id       = $id;
         $this->readOnly = $readOnly;
 
-        if ( ! $readOnly && ! isset(self::$_listCreatedTables[$this->table])) {
-            $this->CreateTable();
+        if (!$readOnly && !isset(self::$_listCreatedTables[$this->table])) {
+            $this->createTable();
             self::$_listCreatedTables[$this->table] = true;
         }
 
         if ($this->id) {
-            if ( ! isset(self::$_queries[$this->table][intval($this->id)])) {
+            if (!isset(self::$_queries[$this->table][intval($this->id)])) {
                 self::$_queries[$this->table][intval($this->id)] = ['data' => []];
             }
 
@@ -45,7 +46,8 @@ abstract class ModelOptimized {
         }
     }
 
-    private function _RealFillData() {
+    private function _realFillData()
+    {
         if ($this->id && empty($this->data)) {
             if (empty(self::$_queries[$this->table][intval($this->id)]['data'])) {
                 $ids = [];
@@ -55,7 +57,7 @@ abstract class ModelOptimized {
                         $ids[$id] = $id;
                     }
                 }
-                if ( ! empty($ids)) {
+                if (!empty($ids)) {
                     $list = $this->db->select(
                         "SELECT * FROM ?# WHERE ?# IN (?a)",
                         $this->table,
@@ -73,7 +75,8 @@ abstract class ModelOptimized {
         }
     }
 
-    public function __set($key, $value) {
+    public function __set($key, $value)
+    {
         if ($this->isDel) {
             trigger_error("Can not change removed object!", E_USER_ERROR);
         }
@@ -86,22 +89,23 @@ abstract class ModelOptimized {
             trigger_error("Can not change id field!", E_USER_ERROR);
         }
 
-        $this->_RealFillData();
+        $this->_realFillData();
 
         return $this->data[$key] = $value;
     }
 
-    public function __get($key) {
+    public function __get($key)
+    {
         // Нельзя получать данные из объекта который удалён
         if ($this->isDel) {
             trigger_error("Can not get value from removed object!", E_USER_ERROR);
         }
 
-        $this->_RealFillData();
+        $this->_realFillData();
 
         // Если спрашивают ключевое поле, но сейчас идёт только заполнение данных то пытаетмся сделать запись в БД и вернуть id который она скажет
-        if (in_array($key, [$this->idField, 'id']) && ! $this->id && count($this->data)) {
-            return $this->Flush();
+        if (in_array($key, [$this->idField, 'id']) && !$this->id && count($this->data)) {
+            return $this->flush();
         }
 
         $ret = $key == 'id'
@@ -111,23 +115,25 @@ abstract class ModelOptimized {
         return $ret;
     }
 
-    public function __isset($key) {
+    public function __isset($key)
+    {
         // Нельзя получать данные из объекта который удалён
         if ($this->isDel) {
             trigger_error("Can not get value from removed object!", E_USER_ERROR);
         }
 
-        $this->_RealFillData();
+        $this->_realFillData();
 
         // Если спрашивают ключевое поле, но сейчас идёт только заполнение данных то пытаетмся сделать запись в БД и вернуть id который она скажет
-        if (in_array($key, [$this->idField, 'id']) && ! $this->id && count($this->data)) {
-            return $this->Flush();
+        if (in_array($key, [$this->idField, 'id']) && !$this->id && count($this->data)) {
+            return $this->flush();
         }
 
         return $key == 'id' ? isset($this->data[$this->idField]) : isset($this->data[$key]);
     }
 
-    public function Flush() {
+    public function flush()
+    {
         $ret = false;
 
         if ($this->readOnly) {
@@ -143,7 +149,9 @@ abstract class ModelOptimized {
                 if ($this->dataStart != $this->data) {
                     $data = [];
                     foreach ($this->data as $k => $v) {
-                        if ($k == $this->idField) continue;
+                        if ($k == $this->idField) {
+                            continue;
+                        }
                         $data[$k] = $v;
                     }
 
@@ -186,14 +194,15 @@ abstract class ModelOptimized {
         return $ret;
     }
 
-    public function IsExists() {
+    public function isExists()
+    {
         if (is_null($this->id)) {
             return false;
         }
 
         static $existeds = [];
         $ret = true;
-        if ( ! in_array($this->id, array_keys($existeds))) {
+        if (!in_array($this->id, array_keys($existeds))) {
             $ret = $this->db->selectCell("SELECT COUNT(*) FROM ?# WHERE ?# = ?d", $this->table, $this->idField, $this->id) > 0;
             if ($ret) {
                 $existeds[$this->id] = $ret;
@@ -203,20 +212,24 @@ abstract class ModelOptimized {
         return $ret;
     }
 
-    public function ResetChanges() {
-        $this->_RealFillData();
+    public function resetChanges()
+    {
+        $this->_realFillData();
         $this->data = $this->dataStart;
     }
 
-    public function IsOnlyShow() {
+    public function isOnlyShow()
+    {
         return $this->readOnly;
     }
 
-    public function IsDeleted() {
+    public function isDeleted()
+    {
         return $this->isDel;
     }
 
-    public function Delete() {
+    public function delete()
+    {
         $ret = false;
         if ($this->readOnly || $this->isDel) {
             return $ret;
@@ -228,23 +241,26 @@ abstract class ModelOptimized {
                 $this->idField,
                 $this->id);
         }
-        $this->isDel = $ret; //@todo Check (must return number of removed elements)
+        $this->isDel = $ret;
 
         return $ret;
     }
 
-    public function __destruct() {
-        return $this->Flush();
+    public function __destruct()
+    {
+        return $this->flush();
     }
 
-    public function GetData() {
-        $this->_RealFillData();
+    public function getData()
+    {
+        $this->_realFillData();
 
         return $this->data;
     }
 
-    public function HasChanges() {
-        $this->_RealFillData();
+    public function hasChanges()
+    {
+        $this->_realFillData();
 
         return $this->data != $this->dataStart;
     }

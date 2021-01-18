@@ -8,21 +8,23 @@ namespace Models;
  * @author  GYL
  * @updated Zmi
  */
-abstract class ModelDoubleIndex {
+abstract class ModelDoubleIndex implements IModel
+{
     protected $table;
     protected $db;
-    private $id1 = null;
-    private $id2 = null;
-    private $idField1;
-    private $idField2;
-    private $readOnly = false;
-    private $isDel = false;
-    private $data = [];
-    private $dataStart = [];
+    private   $id1       = null;
+    private   $id2       = null;
+    private   $idField1;
+    private   $idField2;
+    private   $readOnly  = false;
+    private   $isDel     = false;
+    private   $data      = [];
+    private   $dataStart = [];
 
-    abstract protected function CreateTable();
+    abstract protected function createTable();
 
-    public function __construct(&$db, $table, $idField1, $id1, $idField2, $id2, $readOnly = false) {
+    public function __construct(&$db, $table, $idField1, $id1, $idField2, $id2, $readOnly = false)
+    {
         $this->db       = &$db;
         $this->table    = $table;
         $this->idField1 = $idField1;
@@ -31,29 +33,29 @@ abstract class ModelDoubleIndex {
         $this->id2      = $id2;
         $this->readOnly = $readOnly;
 
-        if ( ! $readOnly) {
-            $this->CreateTable();
+        if (!$readOnly) {
+            $this->createTable();
         }
 
-        if ( ! is_null($this->id1) && ! is_null($this->id2) && $this->db) {
-            $this->data      = $this->db->selectRow(
+        if (!is_null($this->id1) && !is_null($this->id2) && $this->db) {
+            $this->data = $this->dataStart = $this->db->selectRow(
                 "SELECT
-                                                    *
-                                                 FROM
-                                                    ?#
-                                                 WHERE
-                                                    ?# = ?d AND ?# = ?d",
+                    *
+                 FROM
+                    ?#
+                 WHERE
+                    ?# = ?d AND ?# = ?d",
                 $this->table,
                 $this->idField1,
                 $this->id1,
                 $this->idField2,
                 $this->id2
             );
-            $this->dataStart = $this->data;
         }
     }
 
-    public function __set($key, $value) {
+    public function __set($key, $value)
+    {
         if ($this->isDel) {
             trigger_error("Can not change removed object!", E_USER_ERROR);
         }
@@ -70,7 +72,8 @@ abstract class ModelDoubleIndex {
         return $this->data[$key] = $value;
     }
 
-    public function __get($key) {
+    public function __get($key)
+    {
         // Нельзя получать данные из объекта который удалён
         if ($this->isDel) {
             trigger_error("Can not get value from removed object!", E_USER_ERROR);
@@ -88,7 +91,8 @@ abstract class ModelDoubleIndex {
         return $res;
     }
 
-    public function Flush() {
+    public function flush()
+    {
         $ret = false;
 
         // Если изначально извлекали только что бы показать то выходим
@@ -147,24 +151,29 @@ abstract class ModelDoubleIndex {
         return $ret;
     }
 
-    public function IsExists() {
+    public function isExists()
+    {
         return $this->db->selectCell("SELECT COUNT(*) FROM ?# WHERE ?# = ?d AND ?# = ?d", $this->table, $this->idField1, $this->id1, $this->idField2, $this->id2) > 0;
     }
 
-    public function HasChanges() {
+    public function hasChanges()
+    {
         return $this->data != $this->dataStart;
     }
 
-    public function IsOnlyShow() {
+    public function isOnlyShow()
+    {
         return $this->readOnly;
     }
 
-    public function IsDeleted() {
+    public function isDeleted()
+    {
         return $this->isDel;
     }
 
-    public function Delete() {
-        if ( ! is_null($this->id1) && ! is_null($this->id2)) {
+    public function delete()
+    {
+        if (!is_null($this->id1) && !is_null($this->id2)) {
             $this->db->query("DELETE FROM ?# WHERE ?# = ?d AND ?# = ?d", $this->table, $this->idField1, $this->id1, $this->idField2, $this->id2);
             $this->id1       = null;
             $this->id2       = null;
@@ -173,7 +182,13 @@ abstract class ModelDoubleIndex {
         }
     }
 
-    public function __destruct() {
-        return $this->Flush();
+    public function __destruct()
+    {
+        return $this->flush();
+    }
+
+    public function getData()
+    {
+        return $this->data;
     }
 }
