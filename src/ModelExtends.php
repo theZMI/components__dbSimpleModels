@@ -13,8 +13,7 @@ class ModelExtends extends ModelOptimized
 
     public function __construct($table, $id = null)
     {
-        $dbs = \Dbs::getInstance();
-        $db  = $dbs->getDatabases()->db;
+        $db = GetDefaultDb();
         parent::__construct(
             $db,
             $table,
