@@ -108,11 +108,9 @@ abstract class ModelOptimized implements IModel
             return $this->flush();
         }
 
-        $ret = $key == 'id'
-            ? $this->data[$this->idField]
-            : (isset($this->data[$key]) ? $this->data[$key] : null);
-
-        return $ret;
+        return $key == 'id'
+            ? ($this->data[$this->idField] ?? null)
+            : ($this->data[$key] ?? null);
     }
 
     public function __isset($key)
