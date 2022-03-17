@@ -103,7 +103,7 @@ abstract class ModelOptimized implements IModel
 
         $this->_realFillData();
 
-        // Если спрашивают ключевое поле, но сейчас идёт только заполнение данных то пытаетмся сделать запись в БД и вернуть id который она скажет
+        // Если спрашивают ключевое поле, но сейчас идёт только заполнение данных, то будет попытка сделать запись в БД и вернуть id который она скажет
         if (in_array($key, [$this->idField, 'id']) && !$this->id && count($this->data)) {
             return $this->flush();
         }
@@ -122,7 +122,7 @@ abstract class ModelOptimized implements IModel
 
         $this->_realFillData();
 
-        // Если спрашивают ключевое поле, но сейчас идёт только заполнение данных то пытаетмся сделать запись в БД и вернуть id который она скажет
+        // Если спрашивают ключевое поле, но сейчас идёт только заполнение данных, то будет попытка сделать запись в БД и вернуть id который она скажет
         if (in_array($key, [$this->idField, 'id']) && !$this->id && count($this->data)) {
             return $this->flush();
         }
@@ -153,14 +153,8 @@ abstract class ModelOptimized implements IModel
                         $data[$k] = $v;
                     }
 
-                    $ret = $this->db->query("
-                                                UPDATE
-                                                    ?#
-                                                SET
-                                                    ?a
-                                                WHERE
-                                                    ?# = ?d
-                                            ",
+                    $this->db->query(
+                        "UPDATE ?# SET ?a WHERE ?# = ?d",
                         $this->table,
                         $data,
                         $this->idField,
@@ -173,19 +167,20 @@ abstract class ModelOptimized implements IModel
 
                 $ret = $this->id;
             } else {
-                $ret = $this->db->query("
-                                            INSERT INTO
-                                                ?#(?#)
-                                            VALUES
-                                                (?a)
-                                        ",
+                $ret = $this->db->query(
+                    "INSERT INTO ?#(?#) VALUES (?a)",
                     $this->table,
                     array_keys($this->data),
                     array_values($this->data)
                 );
 
-                $this->id                                        = $this->data[$this->idField] = $ret;
+                $this->id = $this->data[$this->idField] = $ret;
+
                 self::$_queries[$this->table][intval($this->id)] = ['data' => $this->data];
+            }
+
+            if ($ret) {
+                $this->dataStart = $this->data;
             }
         }
 
@@ -198,12 +193,12 @@ abstract class ModelOptimized implements IModel
             return false;
         }
 
-        static $existeds = [];
+        static $exists = [];
         $ret = true;
-        if (!in_array($this->id, array_keys($existeds))) {
+        if (!in_array($this->id, array_keys($exists))) {
             $ret = $this->db->selectCell("SELECT COUNT(*) FROM ?# WHERE ?# = ?d", $this->table, $this->idField, $this->id) > 0;
             if ($ret) {
-                $existeds[$this->id] = $ret;
+                $exists[$this->id] = $ret;
             }
         }
 

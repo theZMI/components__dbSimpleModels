@@ -39,12 +39,7 @@ abstract class ModelDoubleIndex implements IModel
 
         if (!is_null($this->id1) && !is_null($this->id2) && $this->db) {
             $this->data = $this->dataStart = $this->db->selectRow(
-                "SELECT
-                    *
-                 FROM
-                    ?#
-                 WHERE
-                    ?# = ?d AND ?# = ?d",
+                "SELECT * FROM ?# WHERE ?# = ?d AND ?# = ?d",
                 $this->table,
                 $this->idField1,
                 $this->id1,
@@ -95,7 +90,7 @@ abstract class ModelDoubleIndex implements IModel
     {
         $ret = false;
 
-        // Если изначально извлекали только что бы показать то выходим
+        // Если изначально извлекали только что бы показать, то выходим
         if ($this->readOnly || is_null($this->id1) || is_null($this->id2)) {
             return $ret;
         }
@@ -115,12 +110,7 @@ abstract class ModelDoubleIndex implements IModel
                     $values = array_merge($values, array_values($this->data));
                 }
 
-                $ret = $this->db->query("
-                                            INSERT INTO
-                                                ?#(?#)
-                                            VALUES
-                                                (?a)
-                                        ",
+                $ret = $this->db->query("INSERT INTO ?#(?#) VALUES (?a)",
                     $this->table,
                     $keys,
                     $values
@@ -128,14 +118,7 @@ abstract class ModelDoubleIndex implements IModel
                 $ret = true;
             } else {
                 if ($this->dataStart != $this->data) {
-                    $ret = $this->db->query("
-                                                UPDATE
-                                                    ?#
-                                                SET
-                                                    ?a
-                                                WHERE
-                                                    ?# = ?d AND ?# = ?d
-                                            ",
+                    $ret = $this->db->query("UPDATE ?# SET ?a WHERE ?# = ?d AND ?# = ?d",
                         $this->table,
                         $this->data,
                         $this->idField1,

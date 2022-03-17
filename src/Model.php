@@ -35,12 +35,7 @@ abstract class Model implements IModel
 
         if ($this->id) {
             $this->data = $this->dataStart = $this->db->selectRow(
-                "SELECT
-                    *
-                FROM
-                    ?#
-                WHERE
-                    ?# = ?d",
+                "SELECT * FROM ?# WHERE ?# = ?d",
                 $this->table,
                 $this->idField,
                 $this->id
@@ -72,7 +67,7 @@ abstract class Model implements IModel
             trigger_error("Can not get value from removed object!", E_USER_ERROR);
         }
 
-        // Если спрашивают ключевое поле, но сейчас идёт только заполнение данных то пытаетмся сделать запись в БД и вернуть id который она скажет
+        // Если спрашивают ключевое поле, но сейчас идёт только заполнение данных, то будет попытка сделать запись в БД и вернуть id который она скажет
         if (in_array($key, [$this->idField, 'id']) && !$this->id && count($this->data)) {
             return $this->flush();
         }
@@ -87,7 +82,7 @@ abstract class Model implements IModel
             trigger_error("Can not get value from removed object!", E_USER_ERROR);
         }
 
-        // Если спрашивают ключевое поле, но сейчас идёт только заполнение данных то пытаетмся сделать запись в БД и вернуть id который она скажет
+        // Если спрашивают ключевое поле, но сейчас идёт только заполнение данных, то будет попытка сделать запись в БД и вернуть id который она скажет
         if (in_array($key, [$this->idField, 'id']) && !$this->id && count($this->data)) {
             return $this->flush();
         }
@@ -118,12 +113,7 @@ abstract class Model implements IModel
                         $data[$k] = $v;
                     }
 
-                    $ret = $this->db->query("UPDATE
-                                                ?#
-                                            SET
-                                                ?a
-                                            WHERE
-                                                ?# = ?d",
+                    $ret = $this->db->query("UPDATE ?# SET ?a WHERE ?# = ?d",
                         $this->table,
                         $data,
                         $this->idField,
@@ -135,10 +125,7 @@ abstract class Model implements IModel
 
                 $ret = $this->id;
             } else {
-                $ret = $this->db->query("INSERT INTO
-                                            ?#(?#)
-                                        VALUES
-                                            (?a)",
+                $ret = $this->db->query("INSERT INTO ?#(?#) VALUES (?a)",
                     $this->table,
                     array_keys($this->data),
                     array_values($this->data)
