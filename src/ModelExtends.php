@@ -25,10 +25,14 @@ class ModelExtends extends ModelOptimized
 
     public function flush()
     {
-        if (!$this->isExists() && count($this->getData())) {
+        if (
+            !$this->isExists()
+            && count($this->getData())
+            && !$this->isDeleted()
+            && !$this->isOnlyShow()
+        ) {
             $this->create_time = time();
         }
-
         return parent::flush();
     }
 
