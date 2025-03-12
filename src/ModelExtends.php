@@ -26,8 +26,7 @@ class ModelExtends extends ModelOptimized
     public function flush()
     {
         if (
-            !$this->isExists()
-            && count($this->getData())
+            $this->hasChanges()
             && !$this->isDeleted()
             && !$this->isOnlyShow()
         ) {
