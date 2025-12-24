@@ -27,6 +27,7 @@ class ModelExtends extends ModelOptimized
     {
         if (
             $this->hasChanges()
+            && !$this->isExists()
             && !$this->isDeleted()
             && !$this->isOnlyShow()
         ) {
