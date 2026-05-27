@@ -45,7 +45,7 @@ class ModelExtends extends ModelOptimized
     {
         $from = $page ? (intval($page - 1) * static::PAGE_LIMIT) : 0;
         $ids  = $this->db->selectCol(
-            "SELECT `id` FROM ?# WHERE 1 ORDER BY `create_time` DESC {LIMIT ?d}{, ?d}",
+            "SELECT `id` FROM ?# WHERE 1 ORDER BY `create_time` DESC, `id` DESC {LIMIT ?d}{, ?d}",
             $this->table,
             $page === self::PAGE_ALL ? DBSIMPLE_SKIP : $from,
             $page === self::PAGE_ALL ? DBSIMPLE_SKIP : static::PAGE_LIMIT
