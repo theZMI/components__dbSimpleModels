@@ -23,6 +23,7 @@ abstract class ModelOptimized implements IModel
 
     private static $_queries           = [];
     private static $_listCreatedTables = [];
+    private static $_existsCache       = []; // [table][id] => true, см. isExists()
 
     public function __construct($db, $table, $idField, $id = null, $readOnly = false)
     {
@@ -189,17 +190,19 @@ abstract class ModelOptimized implements IModel
 
     public function isExists()
     {
-        if (is_null($this->id)) {
+        if (is_null($this->id) || $this->isDel) {
             return false;
         }
 
-        static $exists = [];
-        $ret = true;
-        if (!in_array($this->id, array_keys($exists))) {
-            $ret = $this->db->selectCell("SELECT COUNT(*) FROM ?# WHERE ?# = ?d", $this->table, $this->idField, $this->id) > 0;
-            if ($ret) {
-                $exists[$this->id] = $ret;
-            }
+        // Кешируем только положительный ответ и только в пределах своей таблицы (раньше ключом был один id,
+        // и запись users.id=5 "существовала" для любой модели с id=5)
+        if (isset(self::$_existsCache[$this->table][intval($this->id)])) {
+            return true;
+        }
+
+        $ret = $this->db->selectCell("SELECT COUNT(*) FROM ?# WHERE ?# = ?d", $this->table, $this->idField, $this->id) > 0;
+        if ($ret) {
+            self::$_existsCache[$this->table][intval($this->id)] = true;
         }
 
         return $ret;
@@ -233,6 +236,7 @@ abstract class ModelOptimized implements IModel
                 $this->table,
                 $this->idField,
                 $this->id);
+            unset(self::$_existsCache[$this->table][intval($this->id)]);
         }
         $this->isDel = $ret;
 
