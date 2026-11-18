@@ -25,6 +25,16 @@ abstract class ModelOptimized implements IModel
     private static $_listCreatedTables = [];
     private static $_existsCache       = []; // [table][id] => true, см. isExists()
 
+    /**
+     * Отметить, что таблица уже создана: конструктор моделей этой таблицы не будет вызывать createTable().
+     * Нужно, когда приложение само помнит созданные таблицы между запросами (иначе CREATE TABLE IF NOT EXISTS
+     * выполняется на каждом запросе для каждой модели)
+     */
+    public static function markTableCreated($table)
+    {
+        self::$_listCreatedTables[$table] = true;
+    }
+
     public function __construct($db, $table, $idField, $id = null, $readOnly = false)
     {
         $this->db       = $db;
